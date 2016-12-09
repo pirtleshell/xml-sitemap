@@ -1,0 +1,52 @@
+{
+  "name": "xml-sitemap",
+  "version": "0.0.1",
+  "description": "Utilities for quickly writing XML sitemaps",
+  "main": "lib/index.js",
+  "scripts": {
+    "docs": "./node_modules/jsdoc-to-markdown/bin.js -t jsdoc2md/README.hbs lib/index.js > README.md",
+    "test": "xo && mocha test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PirtleShell/xml-sitemap.git"
+  },
+  "keywords": [
+    "xml",
+    "sitemap",
+    "utility",
+    "website",
+    "write-sitemaps",
+    "edit-sitemaps"
+  ],
+  "author": "Robert Pirtle",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/PirtleShell/xml-sitemap/issues"
+  },
+  "homepage": "https://github.com/PirtleShell/xml-sitemap#readme",
+  "dependencies": {
+    "chalk": "^1.1.3",
+    "xml2js": "^0.4.17"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "jsdoc-to-markdown": "^2.0.1",
+    "mocha": "^3.2.0",
+    "xo": "^0.17.1"
+  },
+  "xo": {
+    "esnext": true,
+    "space": true,
+    "overrides": [
+      {
+        "files": "test/*.js",
+        "env": "mocha",
+        "rules": {
+          "no-unused-expressions": 0,
+          "padded-blocks": 0
+        }
+      }
+    ]
+  }
+}

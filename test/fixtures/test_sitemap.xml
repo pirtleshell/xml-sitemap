@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>http://domain.com/</loc>
+    <lastmod>1985-12-25</lastmod>
+  </url>
+  <url>
+    <loc>http://domain.com/another-page</loc>
+    <lastmod>2000-1-1</lastmod>
+    <changefreq>never</changefreq>
+  </url>
+  <url>
+    <loc>http://domain.com/magic</loc>
+    <priority>0.9</priority>
+  </url>
+</urlset>
