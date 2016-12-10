@@ -4,7 +4,7 @@
   "description": "Utilities for quickly writing XML sitemaps",
   "main": "lib/index.js",
   "scripts": {
-    "docs": "./node_modules/jsdoc-to-markdown/bin.js -t jsdoc2md/README.hbs lib/index.js > README.md",
+    "docs": "./node_modules/jsdoc-to-markdown/bin.js -t jsdoc2md/README.hbs lib/*.js > README.md",
     "test": "xo && mocha test"
   },
   "repository": {
