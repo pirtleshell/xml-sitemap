@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "scripts": {
     "docs": "./node_modules/jsdoc-to-markdown/bin.js -t jsdoc2md/README.hbs lib/*.js > README.md",
-    "test": "xo && mocha test"
+    "test": "xo && mocha test/test.js"
   },
   "repository": {
     "type": "git",
@@ -43,6 +43,7 @@
         "files": "test/*.js",
         "env": "mocha",
         "rules": {
+          "import/no-unassigned-import": 0,
           "no-unused-expressions": 0,
           "padded-blocks": 0
         }
