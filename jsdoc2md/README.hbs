@@ -9,77 +9,74 @@ Add it to a project with `npm`:
 $ npm install xml-sitemap --save
 ```
 
-## Basic Usage
-
-Build a new sitemap:
-
+Then just `require` it in your project:
 ```js
 var XmlSitemap = require('xml-sitemap');
 var sitemap = new XmlSitemap();
-
-sitemap.addUrl('http://domain.com/')
-.addUrl('http://domain.com/magic', {lastmod: '2012-12-21', changefreq: 'never'})
-.addUrl('http://domain.com/other', {lastmod: 'now', priority: 0.2});
-
-console.log(sitemap.urls);
-// ['http://domain.com/', 'http://domain.com/magic', 'http://domain.com/other']
-console.log(sitemap.xml);
-// <?xml version="1.0" encoding="UTF-8"?>
-// <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-//   <url>
-//     <loc>http://domain.com/</loc>
-//   </url>
-//   <url>
-//     <loc>http://domain.com/magic</loc>
-//     <lastmod>2012-12-21</lastmod>
-//     <changefreq>never</changefreq>
-//   </url>
-//   <url>
-//     <loc>http://domain.com/other</loc>
-//     <lastmod>{today's date}</lastmod>
-//     <priority>0.2</priority>
-//   </url>
-// </urlset
-
-require('fs').writeFileSync('sitemap.xml', sitemap.xml);
 ```
 
-Or edit an existing one:
+## Basic Usage
+
+For more info on anything check out the [docs](#api).
+
+### Build a sitemap from scratch
 
 ```js
+var sitemap = new XmlSitemap();
+
+// add a url
+sitemap.add('http://domain.com/');
+
+// we can also add options, add multiple urls at once, and chain together methods
+sitemap.add('http://domain.com/magic', {lastmod: 'now', priority: 0.8})
+  .add([
+    'http://domain.com/another-page',
+    {
+      url: 'http://domain.com/sitemapz-rule',
+      changefreq: 'never',
+      lastmod: '1999-12-31'
+    }
+  ])
+  .updateLastmod('http://domain.com/', new Date())
+  .setOptionValue('http://domain.com/sitemapz-rule', 'priority', 1);
+
+
+  // an array of the urls is in sitemap.urls
+  console.log(sitemap.urls);
+  // [ 'http://domain.com/', 'http://domain.com/magic', 'http://domain.com/another-page', 'http://domain.com/sitemapz-rule' ]
+
+  // and the xml is in sitemap.xml
+  require('fs').writeFileSync('sitemap.xml', sitemap.xml)
+
+// we can also get individual attributes
+sitemap.hasUrl('http://domain.com/another-page'); // true
+sitemap.getOptionValue('http://domain.com/', 'lastmod'); // {today's date!}
+sitemap.getOptionValue('http://domain.com/magic', 'lastmod'); // {today's date!}
+sitemap.getOptionValue('http://domain.com/another-page', 'lastmod'); // null
+```
+
+### Read in an existing sitemap
+
+(Like the one we made above!)
+
+```js
+// get the XML as a string
 var xmlString = require('fs').readFileSync('sitemap.xml');
+
+// and pass it to the constructor
 var sitemap = new XmlSitemap(xmlString);
 
-sitemap.removeUrl('http://domain.com/other')
-  .updateLastmod('http://domain.com/', new Date())
-  .updateLastmod('http://domain.com/magic')
-  .setOptionValue('http://domain.com/', 'priority', 0.9);
-
-sitemap.getOptionValue('http://domain.com/', 'lastmod');  // {today's date}
-sitemap.getOptionValue('http://domain.com/magic', 'lastmod');  // {today's date}
-
 sitemap.hasUrl('http://domain.com/magic'); // true
-sitemap.hasUrl('http://domain.com/other'); // false
 
-sitemap.getUrlNode('http://domain.com/');
-// { loc: "http://domain.com/",
-//   lastmod: "{today's date}",
-//   priority: "0.9" }
+sitemap.remove('http://domain.com/another-page')
+  .setOptionValues('http://domain.com/magic', {lastmod: '2012-12-21', priority: 0.9});
 
-console.log(sitemap.xml);
-// <?xml version="1.0" encoding="UTF-8"?>
-// <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-//   <url>
-//     <loc>http://domain.com/</loc>
-//     <lastmod>{today's date}</lastmod>
-//     <priority>0.9</priority>
-//   </url>
-//   <url>
-//     <loc>http://domain.com/magic</loc>
-//     <lastmod>{today's date}</lastmod>
-//     <changefreq>never</changefreq>
-//   </url>
-// </urlset>
+sitemap.hasUrl('http://domain.com/another-page'); // false
+sitemap.getOptionValue('http://domain.com/magic', 'priority'); // '0.9'
+sitemap.getOptionValue('http://domain.com/magic', 'lastmod'); // '2012-12-21'
+
+sitemap.updateLastmod('http://domain.com/magic');
+sitemap.getOptionValue('http://domain.com/magic', 'lastmod'); // {today's date}
 ```
 
 ## API

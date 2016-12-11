@@ -9,77 +9,74 @@ Add it to a project with `npm`:
 $ npm install xml-sitemap --save
 ```
 
-## Basic Usage
-
-Build a new sitemap:
-
+Then just `require` it in your project:
 ```js
 var XmlSitemap = require('xml-sitemap');
 var sitemap = new XmlSitemap();
-
-sitemap.addUrl('http://domain.com/')
-.addUrl('http://domain.com/magic', {lastmod: '2012-12-21', changefreq: 'never'})
-.addUrl('http://domain.com/other', {lastmod: 'now', priority: 0.2});
-
-console.log(sitemap.urls);
-// ['http://domain.com/', 'http://domain.com/magic', 'http://domain.com/other']
-console.log(sitemap.xml);
-// <?xml version="1.0" encoding="UTF-8"?>
-// <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-//   <url>
-//     <loc>http://domain.com/</loc>
-//   </url>
-//   <url>
-//     <loc>http://domain.com/magic</loc>
-//     <lastmod>2012-12-21</lastmod>
-//     <changefreq>never</changefreq>
-//   </url>
-//   <url>
-//     <loc>http://domain.com/other</loc>
-//     <lastmod>{today's date}</lastmod>
-//     <priority>0.2</priority>
-//   </url>
-// </urlset
-
-require('fs').writeFileSync('sitemap.xml', sitemap.xml);
 ```
 
-Or edit an existing one:
+## Basic Usage
+
+For more info on anything check out the [docs](#api).
+
+### Build a sitemap from scratch
 
 ```js
+var sitemap = new XmlSitemap();
+
+// add a url
+sitemap.add('http://domain.com/');
+
+// we can also add options, add multiple urls at once, and chain together methods
+sitemap.add('http://domain.com/magic', {lastmod: 'now', priority: 0.8})
+  .add([
+    'http://domain.com/another-page',
+    {
+      url: 'http://domain.com/sitemapz-rule',
+      changefreq: 'never',
+      lastmod: '1999-12-31'
+    }
+  ])
+  .updateLastmod('http://domain.com/', new Date())
+  .setOptionValue('http://domain.com/sitemapz-rule', 'priority', 1);
+
+
+  // an array of the urls is in sitemap.urls
+  console.log(sitemap.urls);
+  // [ 'http://domain.com/', 'http://domain.com/magic', 'http://domain.com/another-page', 'http://domain.com/sitemapz-rule' ]
+
+  // and the xml is in sitemap.xml
+  require('fs').writeFileSync('sitemap.xml', sitemap.xml)
+
+// we can also get individual attributes
+sitemap.hasUrl('http://domain.com/another-page'); // true
+sitemap.getOptionValue('http://domain.com/', 'lastmod'); // {today's date!}
+sitemap.getOptionValue('http://domain.com/magic', 'lastmod'); // {today's date!}
+sitemap.getOptionValue('http://domain.com/another-page', 'lastmod'); // null
+```
+
+### Read in an existing sitemap
+
+(Like the one we made above!)
+
+```js
+// get the XML as a string
 var xmlString = require('fs').readFileSync('sitemap.xml');
+
+// and pass it to the constructor
 var sitemap = new XmlSitemap(xmlString);
 
-sitemap.removeUrl('http://domain.com/other')
-  .updateLastmod('http://domain.com/', new Date())
-  .updateLastmod('http://domain.com/magic')
-  .setOptionValue('http://domain.com/', 'priority', 0.9);
-
-sitemap.getOptionValue('http://domain.com/', 'lastmod');  // {today's date}
-sitemap.getOptionValue('http://domain.com/magic', 'lastmod');  // {today's date}
-
 sitemap.hasUrl('http://domain.com/magic'); // true
-sitemap.hasUrl('http://domain.com/other'); // false
 
-sitemap.getUrlNode('http://domain.com/');
-// { loc: "http://domain.com/",
-//   lastmod: "{today's date}",
-//   priority: "0.9" }
+sitemap.remove('http://domain.com/another-page')
+  .setOptionValues('http://domain.com/magic', {lastmod: '2012-12-21', priority: 0.9});
 
-console.log(sitemap.xml);
-// <?xml version="1.0" encoding="UTF-8"?>
-// <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-//   <url>
-//     <loc>http://domain.com/</loc>
-//     <lastmod>{today's date}</lastmod>
-//     <priority>0.9</priority>
-//   </url>
-//   <url>
-//     <loc>http://domain.com/magic</loc>
-//     <lastmod>{today's date}</lastmod>
-//     <changefreq>never</changefreq>
-//   </url>
-// </urlset>
+sitemap.hasUrl('http://domain.com/another-page'); // false
+sitemap.getOptionValue('http://domain.com/magic', 'priority'); // '0.9'
+sitemap.getOptionValue('http://domain.com/magic', 'lastmod'); // '2012-12-21'
+
+sitemap.updateLastmod('http://domain.com/magic');
+sitemap.getOptionValue('http://domain.com/magic', 'lastmod'); // {today's date}
 ```
 
 ## API
@@ -103,8 +100,8 @@ An object representation of XML sitemaps and methods for editing them.
         * [.setOptionValues(url, options)](#XmlSitemap+setOptionValues) ⇒ <code>[XmlSitemap](#XmlSitemap)</code>
         * [.updateLastMod(url, [date])](#XmlSitemap+updateLastMod) ⇒ <code>[XmlSitemap](#XmlSitemap)</code>
         * [.hasUrl(url)](#XmlSitemap+hasUrl) ⇒ <code>Bool</code>
-        * [.addUrl(url, [options])](#XmlSitemap+addUrl) ⇒ <code>[XmlSitemap](#XmlSitemap)</code>
-        * [.removeUrl(url)](#XmlSitemap+removeUrl) ⇒ <code>[XmlSitemap](#XmlSitemap)</code>
+        * [.add(url, [urlOptions])](#XmlSitemap+add) ⇒ <code>[XmlSitemap](#XmlSitemap)</code>
+        * [.remove(url)](#XmlSitemap+remove) ⇒ <code>[XmlSitemap](#XmlSitemap)</code>
         * [.getUrlNode(url)](#XmlSitemap+getUrlNode) ⇒ <code>Object</code>
         * [.buildUrlNode(url, [options])](#XmlSitemap+buildUrlNode) ⇒ <code>Object</code>
     * _static_
@@ -152,7 +149,7 @@ XML object tree of sitemap, as generated by [xml2js](https://github.com/Leonidas
 <a name="XmlSitemap+urls"></a>
 
 ### xmlSitemap.urls : <code>Array.&lt;String&gt;</code>
-Array of urls in the sitemap. Add urls by using [addUrl](#XmlSitemap+addUrl).
+Array of urls in the sitemap. Add urls by using [XmlSitemap#addUrl](XmlSitemap#addUrl).
 
 **Kind**: instance property of <code>[XmlSitemap](#XmlSitemap)</code>  
 **Example**  
@@ -465,25 +462,61 @@ var sitemap = new XmlSitemap()
 sitemap.hasUrl('http://domain.com/'); // true
 sitemap.hasUrl('http://otherdomain.com/'); // false
 ```
-<a name="XmlSitemap+addUrl"></a>
+<a name="XmlSitemap+add"></a>
 
-### xmlSitemap.addUrl(url, [options]) ⇒ <code>[XmlSitemap](#XmlSitemap)</code>
-Add url to sitemap
+### xmlSitemap.add(url, [urlOptions]) ⇒ <code>[XmlSitemap](#XmlSitemap)</code>
+There are a few ways to add a urls:
+1. Pass a single url as a string
+2. Pass a single url as a string with an options object
+3. Pass a single object with either a `url` or `loc` attribute and options
+4. Pass an array with any of the above as elements
+Aliased with `addUrl` or `addUrls`
 
 **Kind**: instance method of <code>[XmlSitemap](#XmlSitemap)</code>  
 **Returns**: <code>[XmlSitemap](#XmlSitemap)</code> - The sitemap object  
+**Throws**:
+
+- <code>Error</code> Url object must contain a `url` or `loc` property
+- <code>Error</code> Url is already in sitemap
+- <code>TypeError</code> Url must be object, string, or array
+
 
 | Param | Type | Description |
 | --- | --- | --- |
-| url | <code>String</code> | The url to add |
-| [options] | <code>Object</code> | Options for setting various information about the url. Options must be in the objects [urlOptions](#XmlSitemap+urlOptions). |
+| url | <code>String</code> &#124; <code>Object</code> &#124; <code>Array</code> | The url(s) to add |
+| [urlOptions] | <code>Object</code> | Options for setting various information about the url. Options must be in the objects [urlOptions](#XmlSitemap+urlOptions). |
 
 **Example**  
 ```js
 var sitemap = new XmlSitemap();
+  .add('http://domain.com/')
+  .add('http://domain.com/other', {lastmod: '2012-11-21'})
+  .add({
+    url: 'http://domain.com/magic',
+    priority: 0.7
+  })
+  .add({
+    loc: 'http://domain.com/another-page',
+    changefreq: 'never'
+  });
 
-sitemap.addUrl('http://domain.com/').
-       .addUrl('http://domain.com/other', {lastmod: '2012-11-21'});
+// which makes the same sitemap as:
+var sitemap = new XmlSitemap()
+  .add([
+  'http://domain.com/',
+  {
+    url: 'http://domain.com/other',
+    lastmod: '2012-11-21'
+  },
+  {
+    url: 'http://domain.com/magic'
+    priority: 0.7
+  },
+  {
+    loc: 'http://domain.com/another-page',
+    changefreq: 'never'
+  }
+];
 
 console.log(sitemap.xml);
 // <?xml version="1.0" encoding="UTF-8"?>
@@ -493,14 +526,22 @@ console.log(sitemap.xml);
 //   </url>
 //   <url>
 //     <loc>http://domain.com/other</loc>
-//     <lastmod>2012-12-21</lastmod>
+//     <lastmod>2012-11-21</lastmod>
+//   </url>
+//   <url>
+//     <loc>http://domain.com/magic</loc>
+//     <priority>0.7</priority>
+//   </url>
+//   <url>
+//     <loc>http://domain.com/another-page</loc>
+//     <changefreq>never</changefreq>
 //   </url>
 // </urlset>
 ```
-<a name="XmlSitemap+removeUrl"></a>
+<a name="XmlSitemap+remove"></a>
 
-### xmlSitemap.removeUrl(url) ⇒ <code>[XmlSitemap](#XmlSitemap)</code>
-Remove url from the Sitemap
+### xmlSitemap.remove(url) ⇒ <code>[XmlSitemap](#XmlSitemap)</code>
+Remove url from the Sitemap. Aliased with `removeUrl`.
 
 **Kind**: instance method of <code>[XmlSitemap](#XmlSitemap)</code>  
 **Returns**: <code>[XmlSitemap](#XmlSitemap)</code> - The sitemap object  
@@ -512,8 +553,8 @@ Remove url from the Sitemap
 **Example**  
 ```js
 var sitemap = new XmlSitemap()
-  .addUrl('http://domain.com/')
-  .addUrl('http://domain.com/other');
+  .add('http://domain.com/')
+  .add('http://domain.com/other');
 
 // BEFORE
 console.log(sitemap.urls); // ['http://domain.com/', 'http://domain.com/other']
@@ -528,7 +569,7 @@ console.log(sitemap.xml);
 //   </url>
 // </urlset>
 
-sitemap.removeUrl('http://domain.com/other');
+sitemap.remove('http://domain.com/other');
 
 // AFTER
 console.log(sitemap.urls); // ['http://domain.com/']
