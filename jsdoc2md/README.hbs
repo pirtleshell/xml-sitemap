@@ -37,16 +37,16 @@ sitemap.add('http://domain.com/magic', {lastmod: 'now', priority: 0.8})
       lastmod: '1999-12-31'
     }
   ])
-  .updateLastmod('http://domain.com/', new Date())
+  .update('http://domain.com/', new Date())
   .setOptionValue('http://domain.com/sitemapz-rule', 'priority', 1);
 
 
-  // an array of the urls is in sitemap.urls
-  console.log(sitemap.urls);
-  // [ 'http://domain.com/', 'http://domain.com/magic', 'http://domain.com/another-page', 'http://domain.com/sitemapz-rule' ]
+// an array of the urls is in sitemap.urls
+console.log(sitemap.urls);
+// [ 'http://domain.com/', 'http://domain.com/magic', 'http://domain.com/another-page', 'http://domain.com/sitemapz-rule' ]
 
-  // and the xml is in sitemap.xml
-  require('fs').writeFileSync('sitemap.xml', sitemap.xml)
+// and the xml is in sitemap.xml
+require('fs').writeFileSync('sitemap.xml', sitemap.xml)
 
 // we can also get individual attributes
 sitemap.hasUrl('http://domain.com/another-page'); // true
@@ -75,7 +75,7 @@ sitemap.hasUrl('http://domain.com/another-page'); // false
 sitemap.getOptionValue('http://domain.com/magic', 'priority'); // '0.9'
 sitemap.getOptionValue('http://domain.com/magic', 'lastmod'); // '2012-12-21'
 
-sitemap.updateLastmod('http://domain.com/magic');
+sitemap.update('http://domain.com/magic');
 sitemap.getOptionValue('http://domain.com/magic', 'lastmod'); // {today's date}
 ```
 
