@@ -1,6 +1,6 @@
 {
   "name": "xml-sitemap",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Utilities for quickly writing XML sitemaps",
   "main": "lib/index.js",
   "scripts": {
@@ -14,6 +14,9 @@
   "keywords": [
     "xml",
     "sitemap",
+    "sitemaps",
+    "sitemap.xml",
+    "generate",
     "utility",
     "website",
     "write-sitemaps",
