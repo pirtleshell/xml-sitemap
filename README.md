@@ -469,13 +469,31 @@ Update the lastmod of a url from a file's lastmod **without** linking the file.
 | url | <code>String</code> | The url to link a file to |
 | filepath | <code>String</code> | The path to the file |
 
+**Example**  
+```js
+// suppose 'file.html' was last modified 2016-01-01
+var url = 'http://domain.com/';
+var sitemap = new XmlSitemap()
+  .add(url);
+
+sitemap.getOptionValue(url, 'lastmod');
+//=> null
+
+sitemap.updateFromFile(url, 'file.html');
+sitemap.getOptionValue(url, 'lastmod');
+//=> 2016-01-01
+
+// there are still no linked files in the files object
+sitemap.files
+//=> {}
+```
 <a name="XmlSitemap+linkFile"></a>
 
 ### xmlSitemap.linkFile(url, filepath) ⇒ <code>[XmlSitemap](#XmlSitemap)</code>
-Link a file for the url to get the lastmod value from. Update all lastmod values that have linked files by calling [XmlSitemap#updateAll](XmlSitemap#updateAll). To unlink files use [XmlSitemap#unlinkFile](XmlSitemap#unlinkFile). Update lastmod from file without linking the file using [updateFromFile](#XmlSitemap+updateFromFile).
+Link a file to a url. Their lastmod dates will sync. Update lastmod values that have linked files by calling [XmlSitemap#updateAll](XmlSitemap#updateAll). To unlink files use [XmlSitemap#unlinkFile](XmlSitemap#unlinkFile). Update lastmod from a file without linking the file using [updateFromFile](#XmlSitemap+updateFromFile).
 
 **Kind**: instance method of <code>[XmlSitemap](#XmlSitemap)</code>  
-**Returns**: <code>[XmlSitemap](#XmlSitemap)</code> - The u  
+**Returns**: <code>[XmlSitemap](#XmlSitemap)</code> - The updated XmlSitemap  
 **Throws**:
 
 - <code>Error</code> Unable to resolve filepath
@@ -486,6 +504,25 @@ Link a file for the url to get the lastmod value from. Update all lastmod values
 | url | <code>String</code> | The url to link a file to |
 | filepath | <code>String</code> | The path to the file |
 
+**Example**  
+```js
+// suppose 'file.html' was last modified 2016-01-01
+var url = 'http://domain.com/';
+var sitemap = new XmlSitemap()
+  .add(url);
+
+sitemap.getOptionValue(url, 'lastmod');
+//=> null
+
+sitemap.linkFile(url, 'file.html');
+sitemap.getOptionValue(url, 'lastmod');
+//=> 2016-01-01
+
+// the file has been linked and the lastmod for the url will be updated
+// everytime sitemap.updateAll() is called.
+sitemap.files
+//=> {'http://domain.com/': 'file.html'}
+```
 <a name="XmlSitemap+hasUrl"></a>
 
 ### xmlSitemap.hasUrl(url) ⇒ <code>Bool</code>

@@ -11,7 +11,7 @@ describe('option handling methods', () => {
   });
 
   it('addOption', () => {
-    sitemap.addUrl(url);
+    sitemap.add(url);
 
     const toUpper = str => str.toUpperCase();
     let bad = () => {
@@ -48,7 +48,7 @@ describe('option handling methods', () => {
 
   it('removeOption', () => {
     sitemap.addOption('foo', num => num + 1)
-      .addUrl(url, {foo: 2});
+      .add(url, {foo: 2});
 
     sitemap.urlOptions.should.include('foo');
     sitemap.optionHandlers.should.have.property('foo');
@@ -68,7 +68,7 @@ describe('option handling methods', () => {
   });
 
   it('setOptionValue', () => {
-    sitemap.addUrl(url);
+    sitemap.add(url);
 
     sitemap.setOptionValue(url, 'priority', 0.3);
 
@@ -79,7 +79,7 @@ describe('option handling methods', () => {
   });
 
   it('setOptionValues & getOptionValue', () => {
-    sitemap.addUrl(url, {lastmod: '1900-10-31', priority: 0.7});
+    sitemap.add(url, {lastmod: '1900-10-31', priority: 0.7});
 
     sitemap.getOptionValue(url, 'lastmod').should.equal('1900-10-31');
     sitemap.getOptionValue(url, 'priority').should.equal('0.7');
@@ -93,7 +93,7 @@ describe('option handling methods', () => {
   });
 
   it('getOptionValue errors', () => {
-    sitemap.addUrl(url);
+    sitemap.add(url);
 
     let bad = () => {
       sitemap.getOptionValue('http://notreal.com/', 'lastmod');
@@ -106,28 +106,177 @@ describe('option handling methods', () => {
     bad.should.throw(Error);
   });
 
-  it('updateLastmod', () => {
-    sitemap.addUrl(url);
+  describe('update', () => {
+    it('aliased with updateLastmod', () => {
+      sitemap.add(url);
 
-    should.not.exist(sitemap.getOptionValue(url, 'lastmod'));
+      const lastmod = '2012-12-21';
+      sitemap.updateLastmod(url, lastmod);
+      sitemap.getOptionValue(url, 'lastmod').should.equal(lastmod);
+    });
 
-    const today = XmlSitemap.w3Date(new Date());
-    const endOfWorld = '2012-12-21';
-    const endOfWorldDate = new Date();
-    endOfWorldDate.setFullYear(2012);
-    endOfWorldDate.setMonth(11);
-    endOfWorldDate.setDate(21);
+    it('with value', () => {
+      sitemap.add(url);
 
-    sitemap.updateLastMod(url);
-    sitemap.getOptionValue(url, 'lastmod').should.equal(today);
+      should.not.exist(sitemap.getOptionValue(url, 'lastmod'));
 
-    sitemap.updateLastMod(url, endOfWorld);
-    sitemap.getOptionValue(url, 'lastmod').should.equal(endOfWorld);
+      const today = XmlSitemap.w3Date(new Date());
+      const endOfWorld = '2012-12-21';
+      const endOfWorldDate = new Date();
+      endOfWorldDate.setFullYear(2012);
+      endOfWorldDate.setMonth(11);
+      endOfWorldDate.setDate(21);
 
-    sitemap.updateLastMod(url, 'now');
-    sitemap.getOptionValue(url, 'lastmod').should.equal(today);
+      sitemap.update(url);
+      sitemap.getOptionValue(url, 'lastmod').should.equal(today);
 
-    sitemap.updateLastMod(url, endOfWorldDate);
-    sitemap.getOptionValue(url, 'lastmod').should.equal(endOfWorld);
+      sitemap.update(url, endOfWorld);
+      sitemap.getOptionValue(url, 'lastmod').should.equal(endOfWorld);
+
+      sitemap.update(url, 'now');
+      sitemap.getOptionValue(url, 'lastmod').should.equal(today);
+
+      sitemap.update(url, endOfWorldDate);
+      sitemap.getOptionValue(url, 'lastmod').should.equal(endOfWorld);
+    });
+
+    it('when linked file', () => {
+      sitemap.add(url);
+
+      const filename = 'test/fixtures/test.html';
+      const lastmod = XmlSitemap.w3Date(require('fs').statSync(filename).mtime);
+      sitemap.files[url] = filename;
+
+      sitemap.update(url);
+      sitemap.getOptionValue(url, 'lastmod').should.equal(lastmod);
+    });
+  });
+
+  describe('updateAll', () => {
+    let urls;
+    before(() => {
+      urls = [url, url + 'magic', url + 'other'];
+    });
+
+    describe('no linked files', () => {
+      it('with no default value', () => {
+        sitemap.add(urls);
+
+        sitemap.updateAll();
+        urls.forEach(link => {
+          should.not.exist(sitemap.getOptionValue(link, 'lastmod'));
+        });
+      });
+
+      it('with default value', () => {
+        sitemap.add(urls);
+
+        const lastmod = '2012-12-21';
+        sitemap.updateAll(lastmod);
+        urls.forEach(link => {
+          sitemap.getOptionValue(link, 'lastmod').should.equal(lastmod);
+        });
+      });
+    });
+
+    describe('with some linked files', () => {
+      const filename = 'test/fixtures/test.html';
+      const lastmod = XmlSitemap.w3Date(require('fs').statSync(filename).mtime);
+
+      it('with no default value', () => {
+        sitemap.add(urls);
+        sitemap.files[urls[0]] = filename;
+        sitemap.files[urls[2]] = filename;
+
+        sitemap.updateAll();
+
+        sitemap.getOptionValue(urls[0], 'lastmod').should.equal(lastmod);
+        sitemap.getOptionValue(urls[2], 'lastmod').should.equal(lastmod);
+        should.not.exist(sitemap.getOptionValue(urls[1], 'lastmod'));
+      });
+
+      it('with default value', () => {
+        sitemap.add(urls);
+        sitemap.files[urls[0]] = filename;
+        sitemap.files[urls[2]] = filename;
+
+        sitemap.updateAll('2012-12-21');
+
+        sitemap.getOptionValue(urls[0], 'lastmod').should.equal(lastmod);
+        sitemap.getOptionValue(urls[1], 'lastmod').should.equal('2012-12-21');
+        sitemap.getOptionValue(urls[2], 'lastmod').should.equal(lastmod);
+      });
+    });
+  });
+
+  describe('updateFromFile', () => {
+    const filename = 'test/fixtures/test.html';
+    const lastmod = XmlSitemap.w3Date(require('fs').statSync(filename).mtime);
+
+    it('should update lastmod', () => {
+      sitemap.add(url);
+      sitemap.updateFromFile(url, filename);
+      sitemap.getOptionValue(url, 'lastmod').should.equal(lastmod);
+    });
+
+    it('should not link file', () => {
+      sitemap.add(url);
+      sitemap.updateFromFile(url, filename);
+      sitemap.files.should.deep.equal({});
+    });
+
+    it('throws error with bad path', () => {
+      sitemap.add(url);
+      const bad = () => {
+        sitemap.updateFromFile(url, 'oogaboogabooga/bad/filepath');
+      };
+      bad.should.throw(Error);
+    });
+  });
+
+  describe('File Linking', () => {
+    const filename = 'test/fixtures/test.html';
+    const lastmod = XmlSitemap.w3Date(require('fs').statSync(filename).mtime);
+
+    describe('linkFile', () => {
+      it('adds to files object', () => {
+        sitemap.add(url);
+        sitemap.linkFile(url, filename);
+        sitemap.files.should.have.property(url);
+        sitemap.files[url].should.equal(filename);
+      });
+
+      it('updates lastmod', () => {
+        sitemap.add(url)
+        .linkFile(url, filename);
+        sitemap.getOptionValue(url, 'lastmod').should.equal(lastmod);
+      });
+
+      it('throws error when path is bad', () => {
+        sitemap.add(url);
+        const bad = () => {
+          sitemap.linkFile(url, 'oogaboogabooga/bad/filename');
+        };
+        bad.should.throw(Error);
+      });
+    });
+
+    describe('unlinkFile', () => {
+      beforeEach(() => {
+        sitemap.add({
+          url,
+          file: filename
+        });
+      });
+      it('should remove file from files object', () => {
+        sitemap.unlinkFile(url);
+        sitemap.files.should.deep.equal({});
+      });
+
+      it('should not change lastmod', () => {
+        sitemap.unlinkFile(url);
+        sitemap.getOptionValue(url, 'lastmod').should.equal(lastmod);
+      });
+    });
   });
 });

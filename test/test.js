@@ -36,6 +36,10 @@ describe('XmlSitemap', () => {
       sitemap.urls.should.be.a('array');
       sitemap.urls.should.be.empty;
     });
+    it('has empty files object', () => {
+      sitemap.should.have.property('files');
+      sitemap.files.should.deep.equal({});
+    });
     it('has defaul xmlObj', () => {
       const defaultObj = {
         urlset: {

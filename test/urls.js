@@ -11,13 +11,13 @@ describe('url methods', () => {
   });
 
   it('hasUrl', () => {
-    sitemap.addUrl(url);
+    sitemap.add(url);
     sitemap.hasUrl(url).should.equal.true;
     sitemap.hasUrl('http://otherdomain.com/').should.equal.false;
   });
 
   it('getUrlNode', () => {
-    sitemap.addUrl(url, {
+    sitemap.add(url, {
       lastmod: '2012-12-21',
       changefreq: 'never'
     });
@@ -29,16 +29,24 @@ describe('url methods', () => {
     sitemap.getUrlNode(url).should.deep.equal(urlNode);
   });
 
-  describe('addUrl', () => {
+  describe('add', () => {
+    it('aliased with addUrl & addUrls', () => {
+      sitemap.addUrl(url)
+        .addUrls(url + 'magic');
+
+      sitemap.hasUrl(url).should.be.true;
+      sitemap.hasUrl(url + 'magic').should.be.true;
+    });
+
     it('string input', () => {
-      sitemap.addUrl(url);
+      sitemap.add(url);
 
       sitemap.urls.should.include(url);
       sitemap.xmlObj.urlset.url[0].loc.should.equal(url);
     });
 
     it('string with options', () => {
-      sitemap.addUrl(url, {changefreq: 'never', lastmod: '2012-12-21'});
+      sitemap.add(url, {changefreq: 'never', lastmod: '2012-12-21'});
 
       const urlNode = {
         loc: url,
@@ -96,16 +104,40 @@ describe('url methods', () => {
       sitemap.urls.should.deep.equal(urls);
       sitemap.xmlObj.urlset.url.should.have.length(3);
     });
+
+    it('urlObject with linked file', () => {
+      const filename = 'test/fixtures/test.html';
+      const urlNode = {
+        url,
+        file: filename
+      };
+      const lastmod = require('fs').statSync(filename).mtime;
+      sitemap.add(urlNode);
+
+      sitemap.files.should.have.property(url);
+      sitemap.files[url].should.equal(filename);
+      sitemap.getUrlNode(url).should.have.property('lastmod');
+      sitemap.getUrlNode(url).lastmod.should.equal(XmlSitemap.w3Date(lastmod));
+    });
   });
 
-  it('removeUrl', () => {
-    sitemap.addUrl(url);
+  describe('remove', () => {
+    it('is aliased with removeUrl', () => {
+      sitemap.add(url);
 
-    sitemap.hasUrl(url).should.be.true;
-    sitemap.urls.should.include(url);
+      sitemap.hasUrl(url).should.be.true;
+      sitemap.urls.should.include(url);
 
-    sitemap.removeUrl(url);
-    sitemap.hasUrl(url).should.be.false;
-    sitemap.urls.should.not.include(url);
+      sitemap.removeUrl(url);
+      sitemap.hasUrl(url).should.be.false;
+      sitemap.urls.should.not.include(url);
+    });
+
+    it('properly removes url', () => {
+      sitemap.add(url);
+      sitemap.remove(url);
+      sitemap.urls.should.not.include(url);
+      sitemap.xmlObj.urlset.url.should.have.length(0);
+    });
   });
 });
