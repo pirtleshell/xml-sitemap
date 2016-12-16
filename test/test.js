@@ -31,6 +31,10 @@ describe('XmlSitemap', () => {
       sitemap.should.have.property('xmlObj');
       sitemap.xmlObj.should.deep.equal(defaultXmlObj);
     });
+    it('has null host', () => {
+      sitemap.should.have.property('host');
+      sitemap.host.should.equal('');
+    });
     it('has empty urls array', () => {
       sitemap.should.have.property('urls');
       sitemap.urls.should.be.a('array');
@@ -87,8 +91,6 @@ describe('XmlSitemap', () => {
     require('./statics.js');
   });
 
-  describe('method examples', () => {
-    require('./urls');
-    require('./option-handling');
-  });
+  require('./urls');
+  require('./option-handling');
 });

@@ -10,10 +10,23 @@ describe('url methods', () => {
     url = 'http://domain.com/';
   });
 
-  it('hasUrl', () => {
-    sitemap.add(url);
-    sitemap.hasUrl(url).should.equal.true;
-    sitemap.hasUrl('http://otherdomain.com/').should.equal.false;
+  describe('hasUrl', () => {
+    it('returns true when in tree', () => {
+      sitemap.add(url);
+      sitemap.hasUrl(url).should.equal.true;
+    });
+
+    it('returns false when not in tree', () => {
+      sitemap.add(url);
+      sitemap.hasUrl('http://otherdomain.com/').should.equal.false;
+    });
+
+    it('works with relative links', () => {
+      sitemap.setHost('http://domain.com')
+        .add(url + 'magic');
+      sitemap.hasUrl('magic').should.be.true;
+      // sitemap.hasUrl('/magic').should.be.true;
+    });
   });
 
   it('getUrlNode', () => {
@@ -119,6 +132,12 @@ describe('url methods', () => {
       sitemap.getUrlNode(url).should.have.property('lastmod');
       sitemap.getUrlNode(url).lastmod.should.equal(XmlSitemap.w3Date(lastmod));
     });
+
+    it('works with relative links', () => {
+      sitemap.setHost(url)
+        .add('/magic');
+      sitemap.urls.should.deep.equal([url, url + 'magic']);
+    });
   });
 
   describe('remove', () => {
@@ -138,6 +157,41 @@ describe('url methods', () => {
       sitemap.remove(url);
       sitemap.urls.should.not.include(url);
       sitemap.xmlObj.urlset.url.should.have.length(0);
+    });
+
+    it('works with relative links', () => {
+      sitemap.setHost(url);
+      sitemap.add(url + 'magic');
+      sitemap.remove('/magic');
+      sitemap.urls.should.not.include(url + 'magic');
+      sitemap.xmlObj.urlset.url.should.have.length(1);
+    });
+  });
+
+  describe('setHost', () => {
+    it('string, no options', () => {
+      sitemap.setHost(url);
+      sitemap.host.should.equal(url);
+      sitemap.urls.should.deep.equal([url]);
+    });
+
+    it('string, with options', () => {
+      sitemap.setHost(url, {lastmod: '2012-12-21'});
+      sitemap.host.should.equal(url);
+      sitemap.getOptionValue(url, 'lastmod').should.equal('2012-12-21');
+    });
+
+    it('url object', () => {
+      sitemap.setHost({url, lastmod: '2012-12-21'});
+      sitemap.host.should.equal(url);
+      sitemap.getOptionValue(url, 'lastmod').should.equal('2012-12-21');
+    });
+
+    it('works when host is already in map', () => {
+      sitemap.add(url)
+        .setHost(url);
+      sitemap.host.should.equal(url);
+      sitemap.urls.should.deep.equal([url]);
     });
   });
 });

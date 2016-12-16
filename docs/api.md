@@ -8,32 +8,26 @@ An object representation of XML sitemaps and methods for editing them.
 * [XmlSitemap](#XmlSitemap)
     * [new XmlSitemap([xmlAsString])](#new_XmlSitemap_new)
     * _instance_
+        * [.host](#XmlSitemap+host) : <code>String</code>
         * [.xmlObj](#XmlSitemap+xmlObj) : <code>Object</code>
         * [.urls](#XmlSitemap+urls) : <code>Array.&lt;String&gt;</code>
         * [.files](#XmlSitemap+files) : <code>Object</code>
         * [.urlOptions](#XmlSitemap+urlOptions) : <code>Array.&lt;String&gt;</code>
         * [.optionHandlers](#XmlSitemap+optionHandlers) : <code>Object</code>
         * [.xml](#XmlSitemap+xml) ⇒ <code>String</code>
-        * [.handleOption(option, value)](#XmlSitemap+handleOption) ⇒ <code>String</code> &#124; <code>null</code>
-        * [.addOption(optionName, [handler], [overwrite])](#XmlSitemap+addOption) ⇒ <code>[XmlSitemap](#XmlSitemap)</code>
-        * [.removeOption(optionName)](#XmlSitemap+removeOption) ⇒ <code>[XmlSitemap](#XmlSitemap)</code>
-        * [.getOptionValue(url, option)](#XmlSitemap+getOptionValue) ⇒ <code>String</code> &#124; <code>null</code>
-        * [.setOptionValue(url, option, value)](#XmlSitemap+setOptionValue) ⇒ <code>[XmlSitemap](#XmlSitemap)</code>
-        * [.setOptionValues(url, options)](#XmlSitemap+setOptionValues) ⇒ <code>[XmlSitemap](#XmlSitemap)</code>
-        * [.update(url, [date])](#XmlSitemap+update) ⇒ <code>[XmlSitemap](#XmlSitemap)</code>
-        * [.updateFromFile(url, filepath)](#XmlSitemap+updateFromFile) ⇒ <code>[XmlSitemap](#XmlSitemap)</code>
-        * [.linkFile(url, filepath)](#XmlSitemap+linkFile) ⇒ <code>[XmlSitemap](#XmlSitemap)</code>
         * [.hasUrl(url)](#XmlSitemap+hasUrl) ⇒ <code>Bool</code>
         * [.add(url, [urlOptions])](#XmlSitemap+add) ⇒ <code>[XmlSitemap](#XmlSitemap)</code>
         * [.remove(url)](#XmlSitemap+remove) ⇒ <code>[XmlSitemap](#XmlSitemap)</code>
         * [.getUrlNode(url)](#XmlSitemap+getUrlNode) ⇒ <code>Object</code>
         * [.buildUrlNode(url, [options])](#XmlSitemap+buildUrlNode) ⇒ <code>Object</code>
+        * [.setHost(url, [urlOptions])](#XmlSitemap+setHost) ⇒ <code>[XmlSitemap](#XmlSitemap)</code>
     * _static_
         * [.w3Date(date)](#XmlSitemap.w3Date) ⇒ <code>String</code>
         * [.handleLastmod([date])](#XmlSitemap.handleLastmod) ⇒ <code>String</code>
         * [.handleChangefreq(value)](#XmlSitemap.handleChangefreq) ⇒ <code>String</code>
         * [.handlePriority(value)](#XmlSitemap.handlePriority) ⇒ <code>String</code>
         * [.getLastmodFromFile(filepath)](#XmlSitemap.getLastmodFromFile) ⇒ <code>String</code>
+        * [.parseUrlObject(urlObject)](#XmlSitemap.parseUrlObject) ⇒ <code>Object</code>
 
 <a name="new_XmlSitemap_new"></a>
 
@@ -48,6 +42,30 @@ Create a new sitemap or create a sitemap object from an XML string.
 **Example**  
 ```js
 See Basic Usage above
+```
+<a name="XmlSitemap+host"></a>
+
+### xmlSitemap.host : <code>String</code>
+The webpage host to which all future urls will be relative. See [setHost](#XmlSitemap+setHost)
+
+**Kind**: instance property of <code>[XmlSitemap](#XmlSitemap)</code>  
+**Default**: <code>&#x27;&#x27;</code>  
+**Example**  
+```js
+var sitemap = new XmlSitemap()
+  .setHost('http://domain.com/');
+
+sitemap.host
+//=> 'http://domain.com/'
+
+sitemap.add([
+'/magic',
+'http://domain.com/another-page'
+]);
+
+sitemap.urls
+//=> [ 'http://domain.com/', 'http://domain.com/magic',
+//     'http://domain.com/another-page']
 ```
 <a name="XmlSitemap+xmlObj"></a>
 
@@ -89,13 +107,13 @@ console.log(sitemap.urls);
 <a name="XmlSitemap+files"></a>
 
 ### xmlSitemap.files : <code>Object</code>
-Object of files linked to a url, for determining lastmod. To link a file use [linkFile](#XmlSitemap+linkFile) or pass the filename under the key `file` in the initial options.
+Object of files linked to a url, for determining lastmod. To link a file use [XmlSitemap#linkFile](XmlSitemap#linkFile) or pass the filename under the key `file` in the initial options.
 
 **Kind**: instance property of <code>[XmlSitemap](#XmlSitemap)</code>  
 <a name="XmlSitemap+urlOptions"></a>
 
 ### xmlSitemap.urlOptions : <code>Array.&lt;String&gt;</code>
-Allowable option tags for urls in sitemap. Add options with or without handlers by using [addOption](#XmlSitemap+addOption).
+Allowable option tags for urls in sitemap. Add options with or without handlers by using [XmlSitemap#addOption](XmlSitemap#addOption).
 
 **Kind**: instance property of <code>[XmlSitemap](#XmlSitemap)</code>  
 **Default**: <code>[&#x27;lastmod&#x27;, &#x27;changefreq&#x27;, &#x27;priority&#x27;]</code>  
@@ -113,7 +131,7 @@ console.log(sitemap.urlOptions);
 <a name="XmlSitemap+optionHandlers"></a>
 
 ### xmlSitemap.optionHandlers : <code>Object</code>
-Optional handlers for custom option settings. Handler functions are listed under the option name key. Add options with [addOption](#XmlSitemap+addOption).
+Optional handlers for custom option settings. Handler functions are listed under the option name key. Add options with [XmlSitemap#addOption](XmlSitemap#addOption).
 
 **Kind**: instance property of <code>[XmlSitemap](#XmlSitemap)</code>  
 **Default**: <code>{
@@ -128,322 +146,6 @@ Output the sitemap as XML.
 
 **Kind**: instance property of <code>[XmlSitemap](#XmlSitemap)</code>  
 **Returns**: <code>String</code> - The sitemap XML  
-<a name="XmlSitemap+handleOption"></a>
-
-### xmlSitemap.handleOption(option, value) ⇒ <code>String</code> &#124; <code>null</code>
-Determine if and how to set an options given it's value. Will process option through handler if set in [optionHandlers](#XmlSitemap+optionHandlers). Add options with [addOption](#XmlSitemap+addOption).
-
-**Kind**: instance method of <code>[XmlSitemap](#XmlSitemap)</code>  
-**Returns**: <code>String</code> &#124; <code>null</code> - How the option will appear in the XML  
-**Throws**:
-
-- <code>Error</code> Unavailable options throw an error
-
-
-| Param | Type | Description |
-| --- | --- | --- |
-| option | <code>String</code> | The name of the option |
-| value | <code>\*</code> | The object from which to derive the XML value |
-
-<a name="XmlSitemap+addOption"></a>
-
-### xmlSitemap.addOption(optionName, [handler], [overwrite]) ⇒ <code>[XmlSitemap](#XmlSitemap)</code>
-Add a custom option tag to the allowed url tags. Adds the option and handler to [urlOptions](#XmlSitemap+urlOptions) and [optionHandlers](#XmlSitemap+optionHandlers).
-
-**Kind**: instance method of <code>[XmlSitemap](#XmlSitemap)</code>  
-**Returns**: <code>[XmlSitemap](#XmlSitemap)</code> - The updated sitemap  
-**Throws**:
-
-- <code>Error</code> Cannot add options that already exist without setting overwrite to true. They must be removed with [removeOption](#XmlSitemap+removeOption).
-
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| optionName | <code>String</code> |  | The name of the option |
-| [handler] | <code>function</code> |  | An optional function to process option values for XML representation. Must return string. |
-| [overwrite] | <code>Bool</code> | <code>false</code> | Acknowledge that you are overwriting the option if it already exists. This will remove all instances of the option in the sitemap. |
-
-**Example**  
-```js
-var sitemap = new XmlSitemap()
-.add('http://domain.com.');
-
-// before adding option
-sitemap.setOptionValue('http://domain.com/', 'foo', 'bar');
-// Error: Unrecognized option foo. Expected one of lastmod, changefreq, priority.
-
-// adding option without handler
-sitemap.addOption('foo');
-sitemap.setOptionValue('http://domain.com/', 'foo', 'bar');
-
-console.log(sitemap.xml);
-// <?xml version="1.0" encoding="UTF-8"?>
-// <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-//  <url>
-//    <loc>http://domain.com/</loc>
-//    <foo>bar</foo>
-//  </url>
-// </urlset>
-
-// adding option with handler
-sitemap.addOption('foo', function(str) {return str.toUpperCase();});
-// Error: Option 'foo' already exists.
-
-// using overwrite
-sitemap.addOption('foo', function(str) {return str.toUpperCase();}, true);
-sitemap.setOptionValue('http://domain.com/', 'foo', 'bar');
-
-console.log(sitemap.xml);
-// <?xml version="1.0" encoding="UTF-8"?>
-// <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-//   <url>
-//     <loc>http://domain.com/</loc>
-//     <foo>BAR</foo>
-//   </url>
-// </urlset>
-```
-<a name="XmlSitemap+removeOption"></a>
-
-### xmlSitemap.removeOption(optionName) ⇒ <code>[XmlSitemap](#XmlSitemap)</code>
-Remove an existing available option. Removes its handler if applicable and **removes all instances of it in the sitemap's urls**.
-
-**Kind**: instance method of <code>[XmlSitemap](#XmlSitemap)</code>  
-**Returns**: <code>[XmlSitemap](#XmlSitemap)</code> - - The updated sitemap  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| optionName | <code>String</code> | The option to remove |
-
-**Example**  
-```js
-var sitemap = new XmlSitemap()
-  .addOption('foo')
-  .add('http://domain.com/', {'foo': 'bar'});
-
-// BEFORE
-console.log(sitemap.urlOptions); // [ 'lastmod', 'changefreq', 'priority', 'foo' ]
-console.log(sitemap.xml);
-// <?xml version="1.0" encoding="UTF-8"?>
-// <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-//   <url>
-//     <loc>http://domain.com/</loc>
-//     <foo>bar</foo>
-//   </url>
-// </urlset>
-
-sitemap.removeOption('foo');
-
-// AFTER
-console.log(sitemap.urlOptions); // [ 'lastmod', 'changefreq', 'priority' ]
-console.log(sitemap.xml);
-// <?xml version="1.0" encoding="UTF-8"?>
-// <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-//   <url>
-//     <loc>http://domain.com/</loc>
-//   </url>
-// </urlset>
-```
-<a name="XmlSitemap+getOptionValue"></a>
-
-### xmlSitemap.getOptionValue(url, option) ⇒ <code>String</code> &#124; <code>null</code>
-Get an option value from the XML object tree's url. Valid options that are unset return null. Invalid options or requesting options for urls not in the sitemap throw errors.
-
-**Kind**: instance method of <code>[XmlSitemap](#XmlSitemap)</code>  
-**Returns**: <code>String</code> &#124; <code>null</code> - The option value or null if option not assigned or url isn't in tree.  
-**Throws**:
-
-- <code>Error</code> Url must be in sitemap
-- <code>Error</code> Option must be valid, add options with [addOption](#XmlSitemap+addOption)
-
-
-| Param | Type | Description |
-| --- | --- | --- |
-| url | <code>String</code> | The url to get the option for |
-| option | <code>String</code> | The desired option |
-
-**Example**  
-```js
-var sitemap = new XmlSitemap()
-.add('http://domain.com/', {priority: 0.7});
-
-sitemap.getOptionValue('http://domain.com/', 'priority'); // '0.7'
-sitemap.getOptionValue('http://domain.com/', 'lastmod'); // null
-sitemap.getOptionValue('http://notreal.com/', 'lastmod'); // throws error
-```
-<a name="XmlSitemap+setOptionValue"></a>
-
-### xmlSitemap.setOptionValue(url, option, value) ⇒ <code>[XmlSitemap](#XmlSitemap)</code>
-Set an option on a url node. Set multiple options using [XmlSitemap#updateUrl](XmlSitemap#updateUrl). To remove an option, set its value to null or use [XmlSitemap#removeOptionValue](XmlSitemap#removeOptionValue).
-
-**Kind**: instance method of <code>[XmlSitemap](#XmlSitemap)</code>  
-**Returns**: <code>[XmlSitemap](#XmlSitemap)</code> - The updated XmlSitemap  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| url | <code>string</code> | Url in Sitemap to update |
-| option | <code>string</code> | The name of the option |
-| value | <code>\*</code> | The object from which to derive the XML value |
-
-**Example**  
-```js
-var sitemap = new XmlSitemap()
-  .add('http://domain.com/');
-sitemap.setOptionValue('http://domain.com/', 'priority', 0.3);
-
-console.log(sitemap.xml);
-// <?xml version="1.0" encoding="UTF-8"?>
-// <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-//   <url>
-//     <loc>http://domain.com/</loc>
-//     <priority>0.3</priority>
-//   </url>
-// </urlset>
-```
-<a name="XmlSitemap+setOptionValues"></a>
-
-### xmlSitemap.setOptionValues(url, options) ⇒ <code>[XmlSitemap](#XmlSitemap)</code>
-Update a url's options. Options must be in the sitemap's allowable [urlOptions](#XmlSitemap+urlOptions). Not to be confused with [setOptionValue](#XmlSitemap+setOptionValue) To remove an existing option, set its value to null.
-
-**Kind**: instance method of <code>[XmlSitemap](#XmlSitemap)</code>  
-**Returns**: <code>[XmlSitemap](#XmlSitemap)</code> - The updated sitemap object  
-**Throws**:
-
-- <code>Error</code> Options object is required
-
-
-| Param | Type | Description |
-| --- | --- | --- |
-| url | <code>String</code> | The url to add |
-| options | <code>Object</code> | Options for setting various information about the url |
-
-**Example**  
-```js
-var url = 'http://domain.com/'
-var sitemap = new XmlSitemap()
-.add(url, {lastmod:'1900-10-31', priority: 0.7});
-
-sitemap.getOptionValue(url, 'lastmod'); // '1900-10-31'
-sitemap.getOptionValue(url, 'priority'); // '0.7'
-sitemap.getOptionValue(url, 'changefreq'); // null
-
-sitemap.setOptionValues(url, {priority: 0.8, changefreq: 'weekly'});
-
-sitemap.getOptionValue(url, 'lastmod'); // '1900-10-31'
-sitemap.getOptionValue(url, 'priority'); // '0.8'
-sitemap.getOptionValue(url, 'changefreq'); // 'weekly'
-```
-<a name="XmlSitemap+update"></a>
-
-### xmlSitemap.update(url, [date]) ⇒ <code>[XmlSitemap](#XmlSitemap)</code>
-Update when a url was last modified.  Aliased with `updateLastmod`. Updates lastmod date to today if no date is passed unless there's a linked file. If there's a linked file, it will use that date regardless. To link a file, use [linkFile](#XmlSitemap+linkFile).
-
-**Kind**: instance method of <code>[XmlSitemap](#XmlSitemap)</code>  
-**Returns**: <code>[XmlSitemap](#XmlSitemap)</code> - The sitemap object  
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| url | <code>String</code> |  | Url in Sitemap to update |
-| [date] | <code>String</code> &#124; <code>Date</code> | <code>today</code> | Date to update the lastmod value to. |
-
-**Example**  
-```js
-var url = 'http://domain.com/'
-var sitemap = new XmlSitemap()
-  .add(url);
-
-sitemap.getOptionValue(url, 'lastmod'); // null
-
-// no date
-sitemap.update(url);
-sitemap.getOptionValue(url, 'lastmod'); // {today's date}
-
-// string date
-sitemap.update(url, '2012-12-21');
-sitemap.getOptionValue(url, 'lastmod'); // '2012-12-21'
-
-// 'now'
-sitemap.update(url, 'now');
-sitemap.getOptionValue(url, 'lastmod'); // {today's date}
-
-// Date object
-var date = new Date();
-date.setFullYear(2012);
-date.setMonth(11);
-date.setDate(21);
-sitemap.update(url, date);
-sitemap.getOptionValue(url, 'lastmod'); // '2012-12-21'
-```
-<a name="XmlSitemap+updateFromFile"></a>
-
-### xmlSitemap.updateFromFile(url, filepath) ⇒ <code>[XmlSitemap](#XmlSitemap)</code>
-Update the lastmod of a url from a file's lastmod **without** linking the file.
-
-**Kind**: instance method of <code>[XmlSitemap](#XmlSitemap)</code>  
-**Returns**: <code>[XmlSitemap](#XmlSitemap)</code> - The updated sitemap  
-**Throws**:
-
-- <code>Error</code> Unable to resolve filepath
-
-
-| Param | Type | Description |
-| --- | --- | --- |
-| url | <code>String</code> | The url to link a file to |
-| filepath | <code>String</code> | The path to the file |
-
-**Example**  
-```js
-// suppose 'file.html' was last modified 2016-01-01
-var url = 'http://domain.com/';
-var sitemap = new XmlSitemap()
-  .add(url);
-
-sitemap.getOptionValue(url, 'lastmod');
-//=> null
-
-sitemap.updateFromFile(url, 'file.html');
-sitemap.getOptionValue(url, 'lastmod');
-//=> 2016-01-01
-
-// there are still no linked files in the files object
-sitemap.files
-//=> {}
-```
-<a name="XmlSitemap+linkFile"></a>
-
-### xmlSitemap.linkFile(url, filepath) ⇒ <code>[XmlSitemap](#XmlSitemap)</code>
-Link a file to a url. Their lastmod dates will sync. Update lastmod values that have linked files by calling [XmlSitemap#updateAll](XmlSitemap#updateAll). To unlink files use [XmlSitemap#unlinkFile](XmlSitemap#unlinkFile). Update lastmod from a file without linking the file using [updateFromFile](#XmlSitemap+updateFromFile).
-
-**Kind**: instance method of <code>[XmlSitemap](#XmlSitemap)</code>  
-**Returns**: <code>[XmlSitemap](#XmlSitemap)</code> - The updated XmlSitemap  
-**Throws**:
-
-- <code>Error</code> Unable to resolve filepath
-
-
-| Param | Type | Description |
-| --- | --- | --- |
-| url | <code>String</code> | The url to link a file to |
-| filepath | <code>String</code> | The path to the file |
-
-**Example**  
-```js
-// suppose 'file.html' was last modified 2016-01-01
-var url = 'http://domain.com/';
-var sitemap = new XmlSitemap()
-  .add(url);
-
-sitemap.getOptionValue(url, 'lastmod');
-//=> null
-
-sitemap.linkFile(url, 'file.html');
-sitemap.getOptionValue(url, 'lastmod');
-//=> 2016-01-01
-
-// the file has been linked and the lastmod for the url will be updated
-// everytime sitemap.updateAll() is called.
-sitemap.files
-//=> {'http://domain.com/': 'file.html'}
-```
 <a name="XmlSitemap+hasUrl"></a>
 
 ### xmlSitemap.hasUrl(url) ⇒ <code>Bool</code>
@@ -480,7 +182,7 @@ Aliased with `addUrl` or `addUrls`
 **Returns**: <code>[XmlSitemap](#XmlSitemap)</code> - The sitemap object  
 **Throws**:
 
-- <code>Error</code> Url object must contain a `url` or `loc` property
+- <code>TypeError</code> Url object must contain a `url` or `loc` property
 - <code>Error</code> Url is already in sitemap
 - <code>TypeError</code> Url must be object, string, or array
 
@@ -522,25 +224,11 @@ var sitemap = new XmlSitemap()
   }
 ];
 
-console.log(sitemap.xml);
-// <?xml version="1.0" encoding="UTF-8"?>
-// <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-//   <url>
-//     <loc>http://domain.com/</loc>
-//   </url>
-//   <url>
-//     <loc>http://domain.com/other</loc>
-//     <lastmod>2012-11-21</lastmod>
-//   </url>
-//   <url>
-//     <loc>http://domain.com/magic</loc>
-//     <priority>0.7</priority>
-//   </url>
-//   <url>
-//     <loc>http://domain.com/another-page</loc>
-//     <changefreq>never</changefreq>
-//   </url>
-// </urlset>
+sitemap.urls
+//=> [ 'http://domain.com/', 'http://domain.com/other', ....s
+
+sitemap.xml
+//=> <?xml version="1.0"....
 ```
 <a name="XmlSitemap+remove"></a>
 
@@ -609,7 +297,24 @@ Create a url node XML object
 | Param | Type | Description |
 | --- | --- | --- |
 | url | <code>String</code> | The url to add |
-| [options] | <code>Object</code> | Options for setting various information about the url, must be one of [urlOptions](#XmlSitemap+urlOptions). Add options with [addOption](#XmlSitemap+addOption). |
+| [options] | <code>Object</code> | Options for setting various information about the url, must be one of [urlOptions](#XmlSitemap+urlOptions). Add options with [XmlSitemap#addOption](XmlSitemap#addOption). |
+
+<a name="XmlSitemap+setHost"></a>
+
+### xmlSitemap.setHost(url, [urlOptions]) ⇒ <code>[XmlSitemap](#XmlSitemap)</code>
+Sets the host of the webpage. All relative links added after this will added relative to the host. Automatically adds the host to the tree with the provided options.
+
+**Kind**: instance method of <code>[XmlSitemap](#XmlSitemap)</code>  
+**Returns**: <code>[XmlSitemap](#XmlSitemap)</code> - The updated sitemap object  
+**Throws**:
+
+- <code>Error</code> Url object must contain a `url` or `loc` property
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| url | <code>String</code> &#124; <code>Object</code> | The url to set as host, or urlObject |
+| [urlOptions] | <code>Object</code> | Options for setting various information about the url. Options must valid options in the [urlOptions](#XmlSitemap+urlOptions). |
 
 <a name="XmlSitemap.w3Date"></a>
 
@@ -695,4 +400,21 @@ Get W3-standard formatted date string from file's last modified time.
 | Param | Type | Description |
 | --- | --- | --- |
 | filepath | <code>String</code> | The path to the file |
+
+<a name="XmlSitemap.parseUrlObject"></a>
+
+### XmlSitemap.parseUrlObject(urlObject) ⇒ <code>Object</code>
+Separates out url from options in urlObject.
+
+**Kind**: static method of <code>[XmlSitemap](#XmlSitemap)</code>  
+**Returns**: <code>Object</code> - Object with url under `url` and options object under `options`  
+**Throws**:
+
+- <code>TypeError</code> `urlObject` must be an object
+- <code>TypeError</code> `urlObject` contains no `url` or `loc` key
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| urlObject | <code>Object</code> | The url object to parse |
 

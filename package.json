@@ -30,6 +30,7 @@
   "homepage": "https://github.com/PirtleShell/xml-sitemap#readme",
   "dependencies": {
     "chalk": "^1.1.3",
+    "url": "^0.11.0",
     "xml2js": "^0.4.17"
   },
   "devDependencies": {
@@ -43,12 +44,13 @@
     "space": true,
     "overrides": [
       {
-        "files": "test/*.js",
+        "files": "test/**",
         "env": "mocha",
         "rules": {
           "import/no-unassigned-import": 0,
           "no-unused-expressions": 0,
-          "padded-blocks": 0
+          "padded-blocks": 0,
+          "max-nested-callbacks": 0
         }
       }
     ]

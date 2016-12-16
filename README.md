@@ -2,6 +2,18 @@
 
 > Utilities for quickly making custom XML sitemaps
 
+## Table of Contents
+
+- [Install](#install)
+- [Usage](#usage)
+	- [Build a sitemap from scratch](#build-a-sitemap-from-scratch)
+	- [Setting a host](#setting-a-host)
+	- [Updating and reading sitemap info](#updating-and-reading-sitemap-info)
+	- [Editing an existing sitemap](#editing-an-existing-sitemap)
+	- [Set lastmod values from files](#set-lastmod-values-from-files)
+- [API](#api)
+- [Licence](#licence)
+
 ## Install
 
 Add it to a project with `npm`:
@@ -15,7 +27,7 @@ var XmlSitemap = require('xml-sitemap');
 var sitemap = new XmlSitemap();
 ```
 
-## Basic Usage
+## Usage
 
 For more info on anything check out the [docs](https://github.com/PirtleShell/xml-sitemap/blob/master/docs/api.md).
 
@@ -60,7 +72,30 @@ var sitemap = new XmlSitemap()
   ]);
 ```
 
-Update and read some info from it:
+### Setting a host
+
+Setting a host with `.setHost(url)` allows for all methods to accept relative links. `.setHost` accepts a string or an object with options. Building the above with a host set:
+
+```js
+var sitemap = new XmlSitemap()
+  .setHost('http://domain.com/')    // allows relative links, automatically adds host url
+  .add([
+    {
+      url: '/another-page',
+      lastmod: 'now',
+      priority: 0.8
+    },
+    {
+      loc: '/sitemapz-rule',
+      changefreq: 'never',
+      lastmod: '1999-12-31'
+    }
+  ]);
+```
+
+### Updating and reading sitemap info
+
+Update and read some info from the sitemap we built above:
 
 ```js
 // update some values
@@ -72,7 +107,7 @@ sitemap.urls
 //=> [ 'http://domain.com/', 'http://domain.com/magic', 'http://domain.com/another-page', 'http://domain.com/sitemapz-rule' ]
 
 // and the xml is in sitemap.xml
-require('fs').writeFileSync('sitemap.xml', sitemap.xml)
+require('fs').writeFileSync('sitemap.xml', sitemap.xml);
 
 // we can also read info from the sitemap
 sitemap.hasUrl('http://domain.com/another-page');
@@ -88,7 +123,7 @@ sitemap.getOptionValue('http://domain.com/another-page', 'lastmod');
 //=> null
 ```
 
-### Read in an existing sitemap
+### Editing an existing sitemap
 
 We can read in an existing sitemap (like the one we made above!) and modify it on the fly.
 
@@ -96,33 +131,34 @@ We can read in an existing sitemap (like the one we made above!) and modify it o
 // get the XML as a string
 var xmlString = require('fs').readFileSync('sitemap.xml');
 // and pass it to the constructor
-var sitemap = new XmlSitemap(xmlString);
+var sitemap = new XmlSitemap(xmlString)
+  .setHost('http://domain.com/');
 
-sitemap.hasUrl('http://domain.com/magic');
+sitemap.hasUrl('/magic');
 //=> true
 
 // modify it
-sitemap.remove('http://domain.com/another-page')
-  .setOptionValues('http://domain.com/magic', {
+sitemap.remove('/another-page')
+  .setOptionValues('/magic', {
     lastmod: '2012-12-21',
     priority: 0.9
   });
 
-sitemap.hasUrl('http://domain.com/another-page');
+sitemap.hasUrl('/another-page');
 //=> false
-sitemap.getOptionValue('http://domain.com/magic', 'priority');
+sitemap.getOptionValue('/magic', 'priority');
 //=> '0.9'
 
 // quickly update lastmod vlaues
-sitemap.getOptionValue('http://domain.com/magic', 'lastmod');
+sitemap.getOptionValue('/magic', 'lastmod');
 //=> '2012-12-21'
 
-sitemap.update('http://domain.com/magic');
-sitemap.getOptionValue('http://domain.com/magic', 'lastmod');
+sitemap.update('/magic');
+sitemap.getOptionValue('/magic', 'lastmod');
 //=> {today's date}
 ```
 
-### Lastmod values from Files
+### Set lastmod values from files
 
 For easily updating a url's lastmod, we can link a file to it. Here are a few ways to link the file:
 
@@ -154,7 +190,7 @@ sitemap.files = {
   url1: filename1,
   url2: filename2,
   ...
-}
+};
 sitemap.updateAll();
 ```
 
